@@ -17,7 +17,7 @@ build/
 .env.development.local
 
 # IDEs
-.vscode/*
+#.vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 .DS_Store

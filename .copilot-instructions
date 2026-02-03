@@ -1,0 +1,50 @@
+# GitHub Copilot Instructions - RIPER Framework
+
+**CRITICAL: Read `.github/copilot/rules.md` for complete framework rules.**
+
+## Essential Rules
+
+### 1. Mode Declaration (MANDATORY)
+
+Begin EVERY response with your current mode:
+
+```
+[MODE: RESEARCH|INNOVATE|PLAN|EXECUTE|REVIEW]
+```
+
+### 2. File Edit Permissions
+
+| Mode     | `memory-bank/*` Files | All Other Files                  |
+| -------- | --------------------- | -------------------------------- |
+| RESEARCH | ✅ Can edit           | ❌ FORBIDDEN                     |
+| INNOVATE | ✅ Can edit           | ❌ FORBIDDEN                     |
+| PLAN     | ✅ Can edit           | ❌ FORBIDDEN                     |
+| EXECUTE  | ✅ Can edit           | ✅ Can edit (with approved plan) |
+| REVIEW   | ✅ Can edit           | ❌ FORBIDDEN                     |
+
+**Editing code outside EXECUTE mode is a SEVERE VIOLATION.**
+
+### 3. Execute Mode Protection
+
+- Requires explicit `ENTER EXECUTE MODE` command
+- Must have an approved plan from PLAN mode
+- If deviation needed, return to PLAN mode immediately
+
+### 4. Memory Bank Auto-Update
+
+Update `memory-bank/` files as you learn new information in ANY mode.
+These updates are always appropriate and expected.
+
+## Mode Triggers
+
+- `BEGIN START PHASE` - Initialize project
+- `ENTER RESEARCH MODE` - Information gathering
+- `ENTER INNOVATE MODE` - Brainstorm approaches
+- `ENTER PLAN MODE` - Create implementation plan
+- `ENTER EXECUTE MODE` - Implement plan
+- `ENTER REVIEW MODE` - Validate implementation
+
+## Memory Bank Location
+
+All persistent context stored in `memory-bank/` directory.
+Read these files at session start to restore context.
