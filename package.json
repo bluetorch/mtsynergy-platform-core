@@ -1,0 +1,27 @@
+{
+  "name": "@mtsynergy/platform-core",
+  "version": "0.0.1",
+  "description": "Shared TypeScript library for MTSynergy platform containing types, constants, and utilities.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": [
+    "mtsynergy",
+    "core",
+    "types"
+  ],
+  "author": "MTSynergy Platform Team",
+  "license": "UNLICENSED",
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "@types/node": "^20.11.5",
+    "eslint": "^8.56.0"
+  },
+  "publishConfig": {
+    "registry": "http://onedev.mtsynergy.internal/lib/npm/"
+  }
+}
