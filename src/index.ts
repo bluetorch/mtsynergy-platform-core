@@ -1,10 +1,10 @@
 // Export all modules from here
-export const PLATFORM_NAME = "MTSynergy";
+export const PLATFORM_NAME = 'MTSynergy';
 
 export enum UserRole {
-  ADMIN = "ADMIN",
-  CREATOR = "CREATOR",
-  VIEWER = "VIEWER"
+  ADMIN = 'ADMIN',
+  CREATOR = 'CREATOR',
+  VIEWER = 'VIEWER',
 }
 
 // Placeholder for generated API types
