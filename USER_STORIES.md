@@ -155,6 +155,40 @@ npm publish --registry https://git.example.com/api/npm/registry/
 wrangler r2 cp ./dist/* r2://mtsynergy-cdn/@mtsynergy/core@1.0.0/ --recursive
 ```
 
+### Observability Utilities (SC-804–SC-808)
+
+- **SC-804:** Shared PII sanitization functions
+  - Fetch PII patterns from BFF GET /api/observability/pii-patterns on first import
+  - Cache patterns in memory; refresh every 5 minutes or on version change
+  - Export functions: sanitizeEmail(str), sanitizePhone(str), redactToken(str), maskIdentifier(str), scrubObject(obj)
+  - Pattern matching uses regex from ConfigMap; replacement tokens: [REDACTED-EMAIL], [REDACTED-PHONE], etc.
+  - scrubObject recursively scans object/array trees and applies sanitization to string values
+
+- **SC-805:** Correlation ID generator & validator
+  - generateCorrelationId(): string — Generate UUID v4 using crypto.randomUUID() (browser) or uuid library (Node/mobile)
+  - isValidCorrelationId(id: string): boolean — Validate against UUID v4 regex pattern
+  - Regex: ^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$
+  - TypeScript type: CorrelationId = string & { __brand: 'CorrelationId' } (branded type for compile-time safety)
+
+- **SC-806:** OpenTelemetry trace context helpers
+  - extractTraceContext(headers: Headers): TraceContext | null — Parse W3C traceparent header
+  - injectTraceContext(context: TraceContext, headers: Headers): void — Inject traceparent/tracestate headers
+  - createSpan(name: string, attributes?: Record<string, any>): Span — Create manual span with correlation ID attribute
+  - TraceContext type: { traceId: string, spanId: string, traceFlags: number }
+
+- **SC-807:** Logging utility with automatic PII detection
+  - Logger class with methods: debug(msg, context?), info(msg, context?), warn(msg, context?), error(msg, context?, error?)
+  - Automatically scrubs PII from message and context before output
+  - Output format: JSON with fields {timestamp, level, message, context, correlationId} (correlationId from global/AsyncStorage)
+  - Browser: outputs to console.log; Mobile: outputs to native logger; Node: outputs to stdout
+
+- **SC-808:** Breadcrumb manager with FIFO queue
+  - BreadcrumbManager class: add(event), getAll(), clear()
+  - Max 20 items, max 5KB total size; oldest items evicted when limit reached
+  - Automatic PII scrubbing applied to each breadcrumb before storage
+  - Event type: {type: 'click'|'navigation'|'network'|'error', data: any, timestamp: number}
+  - Storage: sessionStorage (browser), AsyncStorage (mobile)
+
 ## Testing Strategy
 
 - **Unit Tests:** Validation functions, formatting utilities
