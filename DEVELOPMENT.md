@@ -152,19 +152,112 @@ dist/
 └── index.cjs.map       # CJS source map
 ```
 
-### Publishing
+## Publishing to OneDev Registry
 
-```bash
-# Increment version
-npm version patch  # or minor, major
+### Prerequisites
 
-# Build and publish
-npm run build
-npm publish  # or `npm run publish:npm` for npm registry
+- OneDev npm registry credentials configured in `.npmrc`
+- Semantic versioning knowledge (major.minor.patch)
+- Git repository access for tagging releases
 
-# Check what will be published
-npm pack --dry-run
+### Publishing Process
+
+1. **Update Version**
+   ```bash
+   # Patch release (bug fixes): 0.0.1 → 0.0.2
+   npm version patch
+   
+   # Minor release (new features): 0.0.1 → 0.1.0
+   npm version minor
+   
+   # Major release (breaking changes): 0.0.1 → 1.0.0
+   npm version major
+   ```
+
+2. **Run Pre-Publish Checks**
+   ```bash
+   npm run prepublishOnly
+   # This automatically runs: build + test + validate:types
+   ```
+
+3. **Tag Release in Git**
+   ```bash
+   git tag -a v0.1.0 -m "Release version 0.1.0"
+   git push origin v0.1.0
+   ```
+
+4. **Publish to Registry**
+   ```bash
+   npm publish
+   # Publishes to: http://onedev.mtsynergy.internal/lib/npm/
+   ```
+
+### Registry Configuration
+
+The package is configured to publish to the OneDev internal npm registry:
+
+```json
+"publishConfig": {
+  "registry": "http://onedev.mtsynergy.internal/lib/npm/"
+}
 ```
+
+**License:** Apache 2.0 (open source)  
+**Distribution:** Internal only (OneDev registry)
+
+### Consuming the Package
+
+To install `@mtsynergy/platform-core` in your project:
+
+1. **Configure `.npmrc`** (in your project root or `~/.npmrc`):
+   ```
+   registry=http://onedev.mtsynergy.internal/lib/npm/
+   ```
+
+2. **Install the package**:
+   ```bash
+   npm install @mtsynergy/platform-core
+   ```
+
+3. **Import in your code**:
+   ```typescript
+   // Main exports
+   import { Platform, CreateDraftRequest } from '@mtsynergy/platform-core';
+   
+   // Types module
+   import { ApiSuccessResponse, isSuccessResponse } from '@mtsynergy/platform-core/types';
+   
+   // Constants (available after SC-802)
+   import { PLATFORM_CONFIGS } from '@mtsynergy/platform-core/constants';
+   
+   // Utils (available after SC-803)
+   import { validateCaption } from '@mtsynergy/platform-core/utils';
+   ```
+
+### Pre-Publish Checklist
+
+Before publishing a new version:
+
+- [ ] All tests passing (`npm run test`)
+- [ ] Type generation successful (`npm run generate:types`)
+- [ ] Type validation passing (`npm run validate:types`)
+- [ ] Build successful (`npm run build`)
+- [ ] Version bumped in `package.json`
+- [ ] Git tag created for release
+- [ ] CHANGELOG updated (if exists)
+- [ ] No uncommitted changes in working directory
+
+### Versioning Strategy
+
+Follow [Semantic Versioning](https://semver.org/):
+
+- **MAJOR** (x.0.0): Breaking changes (incompatible API changes)
+- **MINOR** (0.x.0): New features (backward-compatible)
+- **PATCH** (0.0.x): Bug fixes (backward-compatible)
+
+**Current version:** 0.0.1 (initial development)
+
+**Pre-1.0.0 Note:** Until version 1.0.0, minor version increments may include breaking changes.
 
 ## Troubleshooting
 

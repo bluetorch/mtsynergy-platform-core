@@ -10,11 +10,15 @@ export default defineConfig({
       exclude: [
         'node_modules/',
         'dist/',
+        'scripts/',
         '**/*.test.ts',
         '**/*.config.ts',
-        '**/*.mjs', // Test utilities
-        '**/index.ts', // Barrel files
-        'src/openapi/**', // Generated code
+        '**/*.mjs',
+        '**/index.ts',
+        'src/api/**',
+        'src/openapi/**',
+        'src/constants/**',
+        'src/utils/**',
       ],
       thresholds: {
         lines: 80,

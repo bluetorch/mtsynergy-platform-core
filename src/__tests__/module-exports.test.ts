@@ -6,8 +6,6 @@ import type {
   InboxItem,
   ListInboxResponse,
   ListInboxResponsePagination,
-  InboxItemContentTypeEnum,
-  InboxItemStatusEnum,
 } from '../openapi/src/models';
 import {
   CreateDraftRequestFromJSON,
@@ -16,8 +14,8 @@ import {
   InboxItemFromJSON,
   ListInboxResponseFromJSON,
   Platform as PlatformEnum,
-  InboxItemContentTypeEnum as ContentType,
-  InboxItemStatusEnum as StatusEnum,
+  InboxItemContentTypeEnum,
+  InboxItemStatusEnum,
 } from '../openapi/src/models';
 
 describe('Module Exports - Generated Types', () => {
@@ -52,8 +50,8 @@ describe('Module Exports - Generated Types', () => {
       platformItemId: 'tweet123',
       author: 'user@example.com',
       content: 'Test content',
-      contentType: ContentType.Comment,
-      status: StatusEnum.New,
+      contentType: InboxItemContentTypeEnum.Comment,
+      status: InboxItemStatusEnum.New,
       createdAt: new Date('2024-01-01T00:00:00Z'),
     };
     expect(item.platform).toBe('twitter');

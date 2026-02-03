@@ -1,5 +1,5 @@
 generatorName: typescript-fetch
-inputSpec: https://platform-bff.mtsynergy.internal/api/v1/openapi.json
+inputSpec: openapi/bff-spec-mock.json
 outputDir: src/openapi
 packageName: core
 packageVersion: 1.0.0

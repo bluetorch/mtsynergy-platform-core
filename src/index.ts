@@ -10,5 +10,8 @@ export enum UserRole {
 // Placeholder for API types
 export * as API from './api/types';
 
+// Core types module
+export * from './types';
+
 // Auto-generated types from BFF OpenAPI specification
 export * from './openapi/index';

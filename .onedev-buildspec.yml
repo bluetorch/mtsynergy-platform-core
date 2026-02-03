@@ -46,9 +46,21 @@ steps:
         name: docker-hub
     commands:
       - npm ci
-      - npm run generate:types -- --input-spec https://bff.mtsynergy.internal/api/spec.json
+      - npm run generate:types -- --input-spec ${BFF_SPEC_URL:-https://bff.mtsynergy.internal/api/spec.json}
     optional: true
     onFailure: IGNORE
+    useTTY: true
+
+  - name: Validate Generated Types
+    runInContainer: true
+    docker:
+      image: node:20-alpine
+      auth:
+        name: docker-hub
+    commands:
+      - npm ci
+      - npm run validate:types
+    onFailure: FAIL_BUILD
     useTTY: true
 
 triggers:
