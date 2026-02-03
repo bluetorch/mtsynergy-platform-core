@@ -131,7 +131,17 @@
       },
       "InboxItem": {
         "type": "object",
-        "required": ["id", "workspaceId", "platform", "platformItemId", "author", "content", "contentType", "status", "createdAt"],
+        "required": [
+          "id",
+          "workspaceId",
+          "platform",
+          "platformItemId",
+          "author",
+          "content",
+          "contentType",
+          "status",
+          "createdAt"
+        ],
         "properties": {
           "id": {
             "type": "string"

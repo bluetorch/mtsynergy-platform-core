@@ -9,7 +9,7 @@ npmRepository: http://onedev.mtsynergy.internal/lib/npm/
 # TypeScript-specific options
 typescriptVersion: 5.3
 useRxJS: false
-modelFileSuffix: ""
+modelFileSuffix: ''
 enumPropertyNaming: PascalCase
 exportModels: true
 exportOperations: false
@@ -20,8 +20,8 @@ enablePostProcessFile: false
 removeOperationIdPrefix: true
 
 # Model naming
-modelNameSuffix: ""
-classname: ""
+modelNameSuffix: ''
+classname: ''
 
 # Documentation
 generateModelDocumentation: true

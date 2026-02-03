@@ -2,76 +2,76 @@ version: '1'
 name: Platform Core Build
 
 steps:
-- name: Validate
-  runInContainer: true
-  docker:
-    image: node:20-alpine
-    auth:
-      name: docker-hub
-  commands:
-  - npm ci
-  - npm run type-check
-  - npm run lint
-  useTTY: true
+  - name: Validate
+    runInContainer: true
+    docker:
+      image: node:20-alpine
+      auth:
+        name: docker-hub
+    commands:
+      - npm ci
+      - npm run type-check
+      - npm run lint
+    useTTY: true
 
-- name: Test
-  runInContainer: true
-  docker:
-    image: node:20-alpine
-    auth:
-      name: docker-hub
-  commands:
-  - npm ci
-  - npm run test:coverage
-  useTTY: true
+  - name: Test
+    runInContainer: true
+    docker:
+      image: node:20-alpine
+      auth:
+        name: docker-hub
+    commands:
+      - npm ci
+      - npm run test:coverage
+    useTTY: true
 
-- name: Build
-  runInContainer: true
-  docker:
-    image: node:20-alpine
-    auth:
-      name: docker-hub
-  commands:
-  - npm ci
-  - npm run build
-  artifacts:
-  - dist/** -> dist
-  useTTY: true
+  - name: Build
+    runInContainer: true
+    docker:
+      image: node:20-alpine
+      auth:
+        name: docker-hub
+    commands:
+      - npm ci
+      - npm run build
+    artifacts:
+      - dist/** -> dist
+    useTTY: true
 
-- name: Generate Types from BFF
-  runInContainer: true
-  docker:
-    image: node:20-alpine
-    auth:
-      name: docker-hub
-  commands:
-  - npm ci
-  - npm run generate:types -- --input-spec https://bff.mtsynergy.internal/api/spec.json
-  optional: true
-  onFailure: IGNORE
-  useTTY: true
+  - name: Generate Types from BFF
+    runInContainer: true
+    docker:
+      image: node:20-alpine
+      auth:
+        name: docker-hub
+    commands:
+      - npm ci
+      - npm run generate:types -- --input-spec https://bff.mtsynergy.internal/api/spec.json
+    optional: true
+    onFailure: IGNORE
+    useTTY: true
 
 triggers:
-- name: On Push
-  branches:
-    include:
-    - main
-    - develop
-    - 'feature/**'
-  paths:
-    include:
-    - src/**
-    - package.json
-    - tsconfig.json
-    - vite.config.ts
-    - vitest.config.ts
+  - name: On Push
+    branches:
+      include:
+        - main
+        - develop
+        - 'feature/**'
+    paths:
+      include:
+        - src/**
+        - package.json
+        - tsconfig.json
+        - vite.config.ts
+        - vitest.config.ts
 
-- name: On Pull Request
-  pullRequestUpdated: true
-  pullRequestFilters:
-    targetBranches:
-    - main
-    - develop
+  - name: On Pull Request
+    pullRequestUpdated: true
+    pullRequestFilters:
+      targetBranches:
+        - main
+        - develop
 
 notificationRecipients: []
 

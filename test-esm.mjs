@@ -10,7 +10,7 @@ console.log('Sample exported symbols:', Object.keys(core).slice(0, 5).join(', ')
 // 3. Type checking passes (verified in npm run type-check)
 
 const hasRuntimeExports = Object.keys(core).length > 0;
-const hasGeneratedConverters = Object.keys(core).some(k => k.includes('FromJSON'));
+const hasGeneratedConverters = Object.keys(core).some((k) => k.includes('FromJSON'));
 
 console.log('Has runtime exports:', hasRuntimeExports);
 console.log('Has generated converters:', hasGeneratedConverters);
@@ -22,4 +22,3 @@ if (hasRuntimeExports) {
   console.log('✗ ESM module has no exports');
   process.exit(1);
 }
-
