@@ -1,0 +1,32 @@
+generatorName: typescript-fetch
+inputSpec: https://platform-bff.mtsynergy.internal/api/v1/openapi.json
+outputDir: src/openapi
+packageName: core
+packageVersion: 1.0.0
+npmName: '@mtsynergy/core'
+npmRepository: http://onedev.mtsynergy.internal/lib/npm/
+
+# TypeScript-specific options
+typescriptVersion: 5.3
+useRxJS: false
+modelFileSuffix: ""
+enumPropertyNaming: PascalCase
+exportModels: true
+exportOperations: false
+
+# Generate clean output
+skipValidation: false
+enablePostProcessFile: false
+removeOperationIdPrefix: true
+
+# Model naming
+modelNameSuffix: ""
+classname: ""
+
+# Documentation
+generateModelDocumentation: true
+generateApiDocumentation: false
+
+# No unnecessary files
+skipFormModel: true
+skipUserAgent: true

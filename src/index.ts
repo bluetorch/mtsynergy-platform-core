@@ -7,5 +7,8 @@ export enum UserRole {
   VIEWER = 'VIEWER',
 }
 
-// Placeholder for generated API types
+// Placeholder for API types
 export * as API from './api/types';
+
+// Auto-generated types from BFF OpenAPI specification
+export * from './openapi/index';

@@ -12,6 +12,13 @@ build/
 .wrangler/
 *.tsbuildinfo
 
+# Generated types
+src/openapi/*.ts
+!src/openapi/index.ts
+
+# OpenAPI generator artifacts
+.openapi-generator/
+
 # Test coverage
 .nyc_output/
 

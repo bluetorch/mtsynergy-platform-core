@@ -3,3 +3,5 @@ node_modules
 coverage
 *.config.ts
 *.config.js
+src/openapi/src/**
+src/openapi/docs/**

@@ -1,0 +1,197 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "MTSynergy Platform BFF API",
+    "version": "1.0.0",
+    "description": "Backend For Frontend API for Web and Mobile clients"
+  },
+  "servers": [
+    {
+      "url": "https://platform-bff.mtsynergy.internal"
+    }
+  ],
+  "paths": {
+    "/api/v1/drafts": {
+      "post": {
+        "summary": "Create a new draft",
+        "tags": ["Publishing"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateDraftRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Draft created successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateDraftResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inbox": {
+      "get": {
+        "summary": "List inbox items",
+        "tags": ["Inbox"],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Inbox items retrieved",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInboxResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Platform": {
+        "type": "string",
+        "enum": ["twitter", "tiktok", "facebook", "instagram", "linkedin", "youtube"],
+        "description": "Social media platform"
+      },
+      "CreateDraftRequest": {
+        "type": "object",
+        "required": ["caption", "platforms"],
+        "properties": {
+          "caption": {
+            "type": "string",
+            "maxLength": 2200,
+            "description": "Post caption/text"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Platform"
+            },
+            "description": "Platforms to publish to"
+          },
+          "scheduledAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "ISO8601 scheduled publish time"
+          },
+          "mediaIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "nullable": true,
+            "description": "IDs of media files to attach"
+          }
+        }
+      },
+      "CreateDraftResponse": {
+        "type": "object",
+        "required": ["id", "status", "createdAt", "updatedAt"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Draft ID"
+          },
+          "status": {
+            "type": "string",
+            "enum": ["DRAFT", "PENDING_APPROVAL", "APPROVED"],
+            "description": "Draft status"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Creation timestamp"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Last update timestamp"
+          }
+        }
+      },
+      "InboxItem": {
+        "type": "object",
+        "required": ["id", "workspaceId", "platform", "platformItemId", "author", "content", "contentType", "status", "createdAt"],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "workspaceId": {
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/Platform"
+          },
+          "platformItemId": {
+            "type": "string"
+          },
+          "author": {
+            "type": "string"
+          },
+          "content": {
+            "type": "string"
+          },
+          "contentType": {
+            "type": "string",
+            "enum": ["COMMENT", "MESSAGE", "MENTION"]
+          },
+          "status": {
+            "type": "string",
+            "enum": ["NEW", "ASSIGNED", "RESOLVED", "SPAM"]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "ListInboxResponse": {
+        "type": "object",
+        "required": ["items", "pagination"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/InboxItem"
+            }
+          },
+          "pagination": {
+            "type": "object",
+            "required": ["page", "pageSize", "total"],
+            "properties": {
+              "page": {
+                "type": "integer"
+              },
+              "pageSize": {
+                "type": "integer"
+              },
+              "total": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

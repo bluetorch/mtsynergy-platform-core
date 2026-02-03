@@ -28,6 +28,7 @@
     "build:vite": "vite build",
     "build:types": "tsc",
     "dev": "vite build --watch",
+    "generate:types": "openapi-generator-cli generate -c openapi-generator.config.yml",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -46,6 +47,7 @@
   "author": "MTSynergy Platform Team",
   "license": "UNLICENSED",
   "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.28.0",
     "@types/node": "^20.11.5",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",

@@ -12,7 +12,9 @@ export default defineConfig({
         'dist/',
         '**/*.test.ts',
         '**/*.config.ts',
+        '**/*.mjs', // Test utilities
         '**/index.ts', // Barrel files
+        'src/openapi/**', // Generated code
       ],
       thresholds: {
         lines: 80,

@@ -328,6 +328,32 @@ npm run test       # Run tests
 npm run docs       # Generate TypeScript documentation
 ```
 
+### OpenAPI Type Generation
+
+This project automatically generates TypeScript types from the BFF OpenAPI specification:
+
+**Configuration:**
+- **Config file:** `openapi-generator.config.yml` — Generator options (TypeScript-fetch, strict naming)
+- **Mock spec:** `openapi/bff-spec-mock.json` — Local development spec (when BFF unavailable)
+- **Output:** `src/openapi/src/models/` — Generated model files (auto-exported via `src/openapi/index.ts`)
+
+**Generate types locally:**
+```bash
+# From mock spec (local development)
+npm run generate:types
+
+# From live BFF spec (CI/CD)
+npm run generate:types -- --input-spec https://bff.mtsynergy.internal/api/spec.json
+```
+
+**Generated types include:**
+- Model interfaces (Platform, CreateDraftRequest, CreateDraftResponse, InboxItem, ListInboxResponse)
+- Enum types (with string literal values)
+- Converter functions (FromJSON, ToJSON, instanceOf)
+- Full TypeScript declarations with JSDoc
+
+**Note:** Generated code is excluded from linting, strict type-checking, and coverage thresholds. It's tested via `src/__tests__/module-exports.test.ts`.
+
 ### Publishing
 
 ```bash
