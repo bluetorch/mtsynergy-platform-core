@@ -152,6 +152,287 @@ dist/
 └── index.cjs.map       # CJS source map
 ```
 
+## Using Validation & Formatting Utilities
+
+### Validation Patterns
+
+#### Multi-Platform Validation
+
+```typescript
+import { validateCaption } from '@mtsynergy/platform-core/utils';
+
+const errors = validateCaption(userInput, ['twitter', 'tiktok']);
+errors.forEach(err => {
+  console.error(`${err.platform}: ${err.message}`);
+});
+```
+
+#### Error Codes for i18n
+
+```typescript
+import { ValidationErrorCode } from '@mtsynergy/platform-core/utils';
+
+const errors = validateCaption(text, platforms);
+errors.forEach(err => {
+  const i18nKey = `validation.${err.code}`;
+  const message = t(i18nKey); // Use your i18n function
+  showToast(message, err.details);
+});
+```
+
+#### Video Validation (Client + Server)
+
+```typescript
+// Client-side: Basic file validation
+import { validateVideoFile } from '@mtsynergy/platform-core/utils';
+
+const handleFileSelect = (file: File) => {
+  const errors = validateVideoFile(file);
+  if (errors.length > 0) {
+    showErrors(errors);
+    return;
+  }
+  uploadFile(file);
+};
+
+// Server-side: Complete validation after ffmpeg processing
+import { validateVideoMetadata } from '@mtsynergy/platform-core/utils';
+
+const processVideo = async (filePath: string) => {
+  const metadata = await extractMetadata(filePath); // ffmpeg or similar
+  const errors = validateVideoMetadata({
+    codec: metadata.codec,
+    width: metadata.width,
+    height: metadata.height,
+    fps: metadata.fps,
+    bitrateMbps: metadata.bitrate / 1000000,
+  });
+  
+  if (errors.length > 0) {
+    throw new ValidationError(errors);
+  }
+};
+```
+
+### Formatting Patterns
+
+#### Locale-Aware Display
+
+```typescript
+import { formatDate, formatNumber } from '@mtsynergy/platform-core/utils';
+
+// Get user's locale from browser or user preferences
+const userLocale = navigator.language || 'en-US';
+
+const dateStr = formatDate(draft.createdAt, userLocale);
+const countStr = formatNumber(metrics.reach, userLocale, 'decimal');
+const percentStr = formatNumber(metrics.engagementRate, userLocale, 'percent');
+```
+
+#### Metric Display
+
+```typescript
+import { formatMetric } from '@mtsynergy/platform-core/utils';
+
+const reach = formatMetric(metrics.reach, 'reach');             // "2.5M"
+const engagement = formatMetric(metrics.engagement, 'engagement'); // "150.0K"
+const impressions = formatMetric(metrics.impressions, 'impressions'); // "456"
+```
+
+#### Combining Validation and Formatting
+
+```typescript
+import {
+  validateCaption,
+  formatDate,
+  ValidationErrorCode,
+} from '@mtsynergy/platform-core/utils';
+
+const DraftForm = ({ draft, platforms, userLocale }) => {
+  const [errors, setErrors] = useState([]);
+
+  const handleCaptionChange = (text: string) => {
+    const validationErrors = validateCaption(text, platforms);
+    setErrors(validationErrors);
+  };
+
+  return (
+    <div>
+      <textarea onChange={e => handleCaptionChange(e.target.value)} />
+      {errors.map(err => (
+        <ErrorMessage key={err.platform}>
+          {err.platform}: {err.message}
+        </ErrorMessage>
+      ))}
+      <div>Created: {formatDate(draft.createdAt, userLocale)}</div>
+    </div>
+  );
+};
+```
+
+## Using PII Sanitization Utilities
+
+### Sanitizing Individual Fields
+
+```typescript
+import {
+  sanitizeEmail,
+  sanitizePhone,
+  redactToken,
+  maskIdentifier,
+} from '@mtsynergy/platform-core/utils';
+
+// Sanitize log messages before sending to observability backend
+logger.info(sanitizeEmail(`User ${user.email} logged in`));
+// Output: "User [REDACTED-EMAIL] logged in"
+
+logger.warn(sanitizePhone(`Contact customer at ${user.phone}`));
+// Output: "Contact customer at [REDACTED-PHONE]"
+
+logger.error(sanitizeToken(`Auth failed: ${authHeader}`));
+// Output: "Auth failed: Bearer [REDACTED-TOKEN]"
+```
+
+### Sanitizing Complex Objects
+
+```typescript
+import { scrubObject, type PiiPattern } from '@mtsynergy/platform-core/utils';
+
+// Define patterns for your application's sensitive data
+const piiPatterns: PiiPattern[] = [
+  {
+    name: 'email',
+    pattern: '[\\w+.-]+@[\\w.-]+\\.\\w{2,}',
+    replacement: '[REDACTED-EMAIL]',
+  },
+  {
+    name: 'phone',
+    pattern: '(?:\\+\\d{1,3})?[\\s.-]?\\d{2,4}[\\s.-]?\\d{2,4}',
+    replacement: '[REDACTED-PHONE]',
+  },
+  {
+    name: 'ssn',
+    pattern: '\\d{3}-\\d{2}-\\d{4}',
+    replacement: '[REDACTED-SSN]',
+  },
+];
+
+// Sanitize an API error response before logging
+const errorResponse = {
+  status: 'error',
+  user: {
+    id: 'user123',
+    email: 'john@example.com',
+    phone: '555-123-4567',
+    ssn: '123-45-6789',
+  },
+  timestamp: '2026-02-07T10:00:00Z',
+};
+
+const sanitized = scrubObject(errorResponse, piiPatterns);
+logger.error('API call failed', sanitized);
+// Logs: {
+//   status: 'error',
+//   user: {
+//     id: 'user123',
+//     email: '[REDACTED-EMAIL]',
+//     phone: '[REDACTED-PHONE]',
+//     ssn: '[REDACTED-SSN]',
+//   },
+//   timestamp: '2026-02-07T10:00:00Z',
+// }
+```
+
+### Custom Replacement Tokens
+
+```typescript
+import { sanitizeEmail, type PiiPattern } from '@mtsynergy/platform-core/utils';
+
+// Use custom token per call
+const message = 'Contact john@example.com';
+const sanitized = sanitizeEmail(message, '[***]');
+console.log(sanitized); // "Contact [***]"
+
+// Or via scrubObject with custom patterns
+const customPatterns: PiiPattern[] = [
+  {
+    name: 'email',
+    pattern: '[\\w+.-]+@[\\w.-]+\\.\\w{2,}',
+    replacement: '[HIDDEN-EMAIL]', // Custom token
+  },
+];
+
+const obj = { user: 'test@example.com' };
+const result = scrubObject(obj, customPatterns);
+// { user: '[HIDDEN-EMAIL]' }
+```
+
+### Circular Reference & Deep Object Handling
+
+```typescript
+import { scrubObject, type PiiPattern } from '@mtsynergy/platform-core/utils';
+
+// Handles circular references safely without stack overflow
+const userObject: any = {
+  id: 'user123',
+  email: 'john@example.com',
+  profile: {
+    email: 'profile@example.com',
+  },
+};
+userObject.self = userObject; // Circular reference
+
+const patterns: PiiPattern[] = [
+  {
+    name: 'email',
+    pattern: '[\\w+.-]+@[\\w.-]+\\.\\w{2,}',
+    replacement: '[REDACTED-EMAIL]',
+  },
+];
+
+// Safe to call - detects cycle, no stack overflow
+const sanitized = scrubObject(userObject, patterns, { maxDepth: 50 });
+// Result: handles all emails, circular reference detected
+
+// Optional: configure max depth for deeply nested structures
+const deepObject = buildDeepObject(100); // 100 levels deep
+const result = scrubObject(deepObject, patterns, { maxDepth: 200 });
+```
+
+### Real-World Pattern: Middleware Logging
+
+```typescript
+import { scrubObject, type PiiPattern } from '@mtsynergy/platform-core/utils';
+
+// Express middleware example
+const piiSanitizeMiddleware = (req, res, next) => {
+  // Sanitize request body before logging
+  const patterns: PiiPattern[] = [
+    { name: 'email', pattern: '[\\w+.-]+@[\\w.-]+\\.\\w{2,}', replacement: '[REDACTED-EMAIL]' },
+    { name: 'phone', pattern: '(?:\\+\\d{1,3})?\\d{3}[\\s.-]?\\d{3}[\\s.-]?\\d{4}', replacement: '[REDACTED-PHONE]' },
+  ];
+
+  logger.info('Incoming request', {
+    method: req.method,
+    path: req.path,
+    // Sanitize body before logging
+    body: scrubObject(req.body, patterns),
+  });
+
+  next();
+};
+
+// Or in Next.js API route
+export default async function handler(req, res) {
+  const patterns = getApplicationPatterns();
+  const sanitizedPayload = scrubObject(req.body, patterns);
+  
+  console.log('Processing:', sanitizedPayload); // PII-safe
+  
+  // ... process request
+}
+```
+
 ## Publishing to OneDev Registry
 
 ### Prerequisites
@@ -342,6 +623,112 @@ Stages:
 - Push to `main`, `develop`, `feature/**`
 - Pull request to `main` or `develop`
 - Changes in `src/`, `package.json`, or config files
+
+---
+
+## SC-802: Platform Constants
+
+### Overview
+
+Platform-specific configuration constants for all supported social media platforms, workspace/social roles, and IANA timezone support.
+
+### File Structure
+
+```
+src/constants/
+  ├── types.ts              # TypeScript type definitions
+  ├── index.ts              # Main export file
+  ├── roles.ts              # Workspace and social roles
+  ├── timezones.ts          # IANA timezone identifiers
+  └── platforms/
+      ├── index.ts          # Platform configs aggregation
+      ├── twitter.ts        # Twitter configuration
+      ├── tiktok.ts         # TikTok configuration
+      ├── facebook.ts       # Facebook configuration
+      ├── instagram.ts      # Instagram configuration
+      ├── linkedin.ts       # LinkedIn configuration
+      └── youtube.ts        # YouTube configuration
+```
+
+### Usage Examples
+
+#### Import platform configs
+
+```typescript
+import { PLATFORM_CONFIGS, getPlatformConfig } from '@mtsynergy/platform-core/constants';
+
+const twitterConfig = getPlatformConfig('twitter');
+console.log(twitterConfig.text.maxCaptionLength); // 280
+```
+
+#### Validate caption length
+
+```typescript
+import { PLATFORM_CONFIGS } from '@mtsynergy/platform-core/constants';
+
+function validateCaption(text: string, platform: Platform): boolean {
+  const maxLength = PLATFORM_CONFIGS[platform].text.maxCaptionLength;
+  return text.length <= maxLength;
+}
+```
+
+#### Check workspace permissions
+
+```typescript
+import { hasWorkspacePermission } from '@mtsynergy/platform-core/constants';
+
+const canDelete = hasWorkspacePermission(userRole, 'ADMIN');
+// Returns true if user is ADMIN or OWNER
+```
+
+#### Validate timezone
+
+```typescript
+import { isValidTimezone, TIMEZONE_DISPLAY_NAMES } from '@mtsynergy/platform-core/constants';
+
+if (isValidTimezone('America/New_York')) {
+  console.log(TIMEZONE_DISPLAY_NAMES['America/New_York']);
+  // Output: "Eastern Time (US & Canada)"
+}
+```
+
+### Platform Configurations
+
+Each platform includes:
+
+- **Text requirements**: Max caption length, hashtags, mentions, markdown/emoji/link support
+- **Video requirements**: Duration limits, file size, resolution, codecs, bitrate, aspect ratios
+- **Image requirements**: File size, resolution, formats, max images per post
+- **API rate limits**: Requests per hour/day (approximate)
+
+**Supported platforms:** Twitter, TikTok, Facebook, Instagram, LinkedIn, YouTube
+
+### Roles
+
+**Workspace roles:** OWNER, ADMIN, MEMBER  
+**Social roles:** ADMIN, MODERATOR, EDITOR, GUEST
+
+Permission checking functions: `hasWorkspacePermission()`, `hasSocialPermission()`
+
+### Timezones
+
+IANA timezone identifiers with display names and validation function.
+
+### Data Sources
+
+All platform limits are sourced from official API documentation. See [docs/PLATFORM_LIMITS.md](docs/PLATFORM_LIMITS.md) for references and last updated dates.
+
+### Maintenance
+
+Platform limits should be reviewed quarterly against official documentation. To update:
+
+1. Check official platform documentation
+2. Update relevant config file in `src/constants/platforms/`
+3. Update `docs/PLATFORM_LIMITS.md` with new limits and date
+4. Run tests: `npm run test`
+5. Bump version appropriately (patch for limit updates)
+
+---
 
 ## Contributing
 

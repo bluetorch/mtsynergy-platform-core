@@ -1,16 +1,33 @@
 /**
  * Platform Utilities Module
- * TODO: Implement in SC-803
- * Validation utilities:
- * - validateCaption()
- * - validateVideoFile()
- * - validateEmail()
- * - validateUrl()
  *
- * Formatting utilities:
- * - formatDate()
- * - formatNumber()
- * - formatMetric()
+ * Provides validation and formatting utilities for social media content
+ * validation and display formatting with locale awareness.
+ *
+ * @packageDocumentation
  */
 
-export {};
+// Type exports
+export type { ValidationError, LocaleIdentifier, FormatResult, VideoMetadata } from './types';
+export { ValidationErrorCode } from './types';
+
+// Validation exports
+export {
+  validateCaption,
+  validateVideoFile,
+  validateVideoMetadata,
+  validateEmail,
+  validateUrl,
+} from './validation';
+
+// Formatting exports
+export { formatDate, formatNumber, formatMetric } from './formatting';
+// PII Sanitization exports
+export type { PiiPattern, ScrubOptions, ValidationResult, PiiPatternName } from './pii-types';
+export {
+  sanitizeEmail,
+  sanitizePhone,
+  redactToken,
+  maskIdentifier,
+  scrubObject,
+} from './pii-sanitizers';

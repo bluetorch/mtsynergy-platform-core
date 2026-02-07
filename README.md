@@ -152,7 +152,84 @@ export const TIMEZONES = [
 ];
 ```
 
-### 3. **Validation Utilities**
+### 3. **Validation & Formatting Utilities (SC-803)**
+
+Provides validation functions for user input and formatting functions for display.
+
+#### Validation Functions
+
+```typescript
+import {
+  validateCaption,
+  validateVideoFile,
+  validateVideoMetadata,
+  validateEmail,
+  validateUrl,
+} from '@mtsynergy/platform-core/utils';
+
+// Validate caption against platform limits
+const captionErrors = validateCaption('Hello world', ['twitter', 'tiktok']);
+if (captionErrors.length > 0) {
+  console.log('Caption too long for:', captionErrors.map(e => e.platform));
+}
+
+// Validate video file from input element
+const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+if (fileInput.files && fileInput.files[0]) {
+  const fileErrors = validateVideoFile(fileInput.files[0]);
+  if (fileErrors.length > 0) {
+    console.error('File validation failed:', fileErrors);
+  }
+}
+
+// Server-side video metadata validation (after ffmpeg processing)
+const metadata = {
+  codec: 'h264',
+  width: 1920,
+  height: 1080,
+  fps: 30,
+  bitrateMbps: 5,
+};
+const metadataErrors = validateVideoMetadata(metadata);
+
+// Validate email
+if (validateEmail('user@example.com')) {
+  console.log('Valid email');
+}
+
+// Validate URL
+if (validateUrl('https://example.com')) {
+  console.log('Valid URL');
+}
+```
+
+#### Formatting Functions
+
+```typescript
+import {
+  formatDate,
+  formatNumber,
+  formatMetric,
+} from '@mtsynergy/platform-core/utils';
+
+// Format date for locale
+const formatted = formatDate('2026-02-06T15:30:00Z', 'en-US');
+console.log(formatted); // "2/6/2026"
+
+// Format number with locale-aware separators
+const num = formatNumber(1234.56, 'de-DE', 'decimal');
+console.log(num); // "1.234,56"
+
+// Format percent
+const percent = formatNumber(0.1234, 'en-US', 'percent');
+console.log(percent); // "12%"
+
+// Format metric with K/M suffix
+const reach = formatMetric(2500000, 'reach');
+console.log(reach); // "2.5M"
+```
+
+### 4. **Validation Utilities**
 
 ```typescript
 // src/utils/validation.ts
@@ -270,6 +347,88 @@ export interface InboxItem {
   createdAt: ISO8601DateTime;
 }
 ```
+
+### 4. **PII Sanitization Utilities (SC-804)**
+
+Provides functions to remove personally identifiable information (PII) from strings and objects for secure logging and observability.
+
+#### Sanitization Functions
+
+```typescript
+import {
+  sanitizeEmail,
+  sanitizePhone,
+  redactToken,
+  maskIdentifier,
+  scrubObject,
+  type PiiPattern,
+} from '@mtsynergy/platform-core/utils';
+
+// Sanitize individual email addresses
+const logMessage = 'User john@example.com logged in';
+const sanitized = sanitizeEmail(logMessage);
+console.log(sanitized); // "User [REDACTED-EMAIL] logged in"
+
+// Sanitize phone numbers
+const contactInfo = 'Call +1-555-1234 for support';
+const sanitized = sanitizePhone(contactInfo);
+console.log(sanitized); // "Call [REDACTED-PHONE] for support"
+
+// Sanitize Bearer tokens and API keys
+const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0...';
+const sanitized = redactToken(authHeader);
+console.log(sanitized); // "Bearer [REDACTED-TOKEN]"
+
+// Mask identifiers (SSN, credit card, long tokens)
+const identifer = 'SSN: 123-45-6789';
+const sanitized = maskIdentifier(identifer);
+console.log(sanitized); // "SSN: [REDACTED-IDENTIFIER]"
+
+// Recursively sanitize objects (deep copy, pattern-based)
+const userObject = {
+  id: 'user123',
+  profile: {
+    email: 'john@example.com',
+    phone: '555-1234',
+  },
+  apiKey: 'sk_live_1234567890abcdefghijklmnopqrstuvwxyz',
+};
+
+const patterns: PiiPattern[] = [
+  { name: 'email', pattern: '[\\w+.-]+@[\\w.-]+\\.\\w{2,}', replacement: '[REDACTED-EMAIL]' },
+  { name: 'phone', pattern: '(?:\\+\\d{1,3})?[\\s.-]?\\d{2,4}[\\s.-]?\\d{2,4}', replacement: '[REDACTED-PHONE]' },
+  { name: 'api_key', pattern: 'sk_[a-z0-9_]{30,}', replacement: '[REDACTED-API-KEY]' },
+];
+
+const sanitizedObject = scrubObject(userObject, patterns);
+// Result:
+// {
+//   id: 'user123',
+//   profile: {
+//     email: '[REDACTED-EMAIL]',
+//     phone: '[REDACTED-PHONE]',
+//   },
+//   apiKey: '[REDACTED-API-KEY]',
+// }
+
+// Custom replacement tokens per function call
+const email = 'test@example.com';
+const result = sanitizeEmail(email, '[HIDDEN]');
+console.log(result); // "[HIDDEN]"
+```
+
+**Key Features:**
+- **Pattern-Based:** Regex-based matching with customizable replacement tokens
+- **Circular Reference Safe:** Uses WeakSet to detect and handle circular references without stack overflow
+- **Non-Mutating:** Returns new objects; never modifies input
+- **Failure-Safe:** Warns on invalid patterns but continues execution (never breaks logging)
+- **Configurable Depth:** Optional maxDepth limit for deeply nested objects (default: 50)
+
+**Default Replacement Tokens:**
+- Email: `[REDACTED-EMAIL]`
+- Phone: `[REDACTED-PHONE]`
+- Token: `Bearer [REDACTED-TOKEN]`
+- Identifier: `[REDACTED-IDENTIFIER]`
 
 ### 5. **API Response Wrappers**
 
