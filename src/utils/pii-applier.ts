@@ -3,8 +3,8 @@
  * Not exported; used internally by sanitizers and scrubObject.
  */
 
-import type { PiiPattern } from './pii-types'
-import { compileRegex, isValidPiiPattern } from './pii-validation'
+import type { PiiPattern } from './pii-types';
+import { compileRegex, isValidPiiPattern } from './pii-validation';
 
 /**
  * Applies a single compiled pattern to a string
@@ -15,10 +15,17 @@ import { compileRegex, isValidPiiPattern } from './pii-validation'
  */
 export function applyPattern(str: string, compiled: RegExp, replacement: string): string {
   try {
-    return str.replace(compiled, replacement)
+    // Create regex with global flag to replace all occurrences, not just first
+    const globalRegex = new RegExp(
+      compiled.source,
+      compiled.flags.includes('g') ? compiled.flags : compiled.flags + 'g'
+    );
+    return str.replace(globalRegex, replacement);
   } catch (error) {
-    console.warn(`[PII] Failed to apply pattern: ${error instanceof Error ? error.message : String(error)}`)
-    return str
+    console.warn(
+      `[PII] Failed to apply pattern: ${error instanceof Error ? error.message : String(error)}`
+    );
+    return str;
   }
 }
 
@@ -30,32 +37,32 @@ export function applyPattern(str: string, compiled: RegExp, replacement: string)
  */
 export function applyPatterns(str: string, patterns: PiiPattern[]): string {
   if (typeof str !== 'string') {
-    return str
+    return str;
   }
 
   if (!Array.isArray(patterns) || patterns.length === 0) {
-    return str
+    return str;
   }
 
-  let result = str
+  let result = str;
 
   for (const pattern of patterns) {
     // Validate pattern before use
-    const validation = isValidPiiPattern(pattern)
+    const validation = isValidPiiPattern(pattern);
     if (!validation.isValid) {
-      console.warn(`[PII] Skipping invalid pattern: ${validation.error}`)
-      continue
+      console.warn(`[PII] Skipping invalid pattern: ${validation.error}`);
+      continue;
     }
 
     // Compile regex
-    const compiled = compileRegex(pattern.pattern)
+    const compiled = compileRegex(pattern.pattern);
     if (!compiled) {
-      continue
+      continue;
     }
 
     // Apply pattern
-    result = applyPattern(result, compiled, pattern.replacement)
+    result = applyPattern(result, compiled, pattern.replacement);
   }
 
-  return result
+  return result;
 }

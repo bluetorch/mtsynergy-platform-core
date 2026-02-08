@@ -379,10 +379,10 @@ const authHeader = 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0
 const sanitized = redactToken(authHeader);
 console.log(sanitized); // "Bearer [REDACTED-TOKEN]"
 
-// Mask identifiers (SSN, credit card, long tokens)
-const identifer = 'SSN: 123-45-6789';
-const sanitized = maskIdentifier(identifer);
-console.log(sanitized); // "SSN: [REDACTED-IDENTIFIER]"
+// Mask long API keys and tokens
+const apiKey = 'sk_live_1234567890abcdefghijklmnopqrstuvwxyz';
+const sanitized = maskIdentifier(apiKey);
+console.log(sanitized); // "[REDACTED-IDENTIFIER]"
 
 // Recursively sanitize objects (deep copy, pattern-based)
 const userObject = {
@@ -396,8 +396,8 @@ const userObject = {
 
 const patterns: PiiPattern[] = [
   { name: 'email', pattern: '[\\w+.-]+@[\\w.-]+\\.\\w{2,}', replacement: '[REDACTED-EMAIL]' },
-  { name: 'phone', pattern: '(?:\\+\\d{1,3})?[\\s.-]?\\d{2,4}[\\s.-]?\\d{2,4}', replacement: '[REDACTED-PHONE]' },
-  { name: 'api_key', pattern: 'sk_[a-z0-9_]{30,}', replacement: '[REDACTED-API-KEY]' },
+  { name: 'token', pattern: 'Bearer\\s+[a-zA-Z0-9._-]+', replacement: 'Bearer [REDACTED-TOKEN]' },
+  { name: 'api_key', pattern: '[a-z]{2}_[a-z0-9_]{30,}', replacement: '[REDACTED-API-KEY]' },
 ];
 
 const sanitizedObject = scrubObject(userObject, patterns);

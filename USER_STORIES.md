@@ -157,7 +157,7 @@ wrangler r2 cp ./dist/* r2://mtsynergy-cdn/@mtsynergy/core@1.0.0/ --recursive
 
 ### Observability Utilities (SC-804–SC-808)
 
-- **SC-804:** Shared PII sanitization functions
+- **SC-804:** ✅ **COMPLETE** - Shared PII sanitization functions
   - Fetch PII patterns from BFF GET /api/observability/pii-patterns on first import
   - Cache patterns in memory; refresh every 5 minutes or on version change
   - Export functions: sanitizeEmail(str), sanitizePhone(str), redactToken(str), maskIdentifier(str), scrubObject(obj)

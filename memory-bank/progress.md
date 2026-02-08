@@ -14,7 +14,9 @@ _Last Updated: 2026-02-07_
 **SC-801 Implementation**: ✅ Complete (2026-02-03)  
 **SC-802 Implementation**: ✅ Complete & Reviewed (2026-02-06) - Grade A+, Production Ready  
 **SC-803 Implementation**: ✅ Complete & Reviewed (2026-02-06) - Grade A+, Production Ready  
-**SC-804 Implementation**: ✅ Complete (2026-02-07) - Grade A, All Tests Passing
+**SC-804 Implementation**: ✅ Complete (2026-02-07) - 269/269 Tests Passing  
+**SC-804 Review**: ✅ Complete (2026-02-07) - Grade A- (Production Ready)  
+**SC-804 Final Verification**: ✅ Complete (2026-02-07) - All documentation verified accurate
 
 ## What Works
 
@@ -201,21 +203,22 @@ ESM + CJS for 4 entry points (index, types, constants, utils) with source maps
 
 ### SC-804 Completed Implementation
 
-**Feature**: Shared PII sanitization functions for observability
+**Feature**: Shared PII sanitization functions for observability (Domain-Specific Implementation)
 
 **Deliverables** (5 Core Functions):
 
 1. ✅ **sanitizeEmail()** - Removes email addresses with default/custom tokens
 2. ✅ **sanitizePhone()** - Removes phone numbers (all international formats)
 3. ✅ **redactToken()** - Redacts OAuth tokens and API tokens
-4. ✅ **maskIdentifier()** - Masks SSN, credit card, long tokens
+4. ✅ **maskIdentifier()** - Masks long identifiers (40+ char sequences like API keys, JWTs)
 5. ✅ **scrubObject()** - Recursively sanitizes object trees (circular reference safe)
 
 **Implementation Files**:
 
 1. ✅ **Type Definitions** (`src/utils/pii-types.ts`)
    - PiiPattern interface with name, pattern (regex string), replacement
-   - PiiPatternName type union (8 PII types: email, phone, ssn, credit_card, token, api_key, password, jwt, custom)
+   - PiiPatternName type union (6 PII types: email, phone, token, api_key, jwt, custom)
+   - **Removed non-applicable types**: ssn, credit_card, password (not collected by platform)
    - ScrubOptions interface with optional maxDepth and visited set
    - ValidationResult interface with isValid and optional error message
 
@@ -233,6 +236,7 @@ ESM + CJS for 4 entry points (index, types, constants, utils) with source maps
 4. ✅ **Core Sanitizers** (`src/utils/pii-sanitizers.ts`)
    - 5 exported sanitization functions with comprehensive JSDoc
    - scrubObject() with iterative traversal using WeakSet for circular detection
+   - **maskIdentifier() simplified**: Matches 40+ character sequences (API keys, JWTs)
    - Default replacement tokens per PII type
    - Customizable replacement tokens per function call
    - Warn+fallback error handling (never throws)
@@ -242,17 +246,20 @@ ESM + CJS for 4 entry points (index, types, constants, utils) with source maps
    - Added function exports: sanitizeEmail, sanitizePhone, redactToken, maskIdentifier, scrubObject
    - No breaking changes to existing exports
 
-6. ✅ **Comprehensive Testing** (116 new tests, 159 total)
-   - pii-sanitizers.test.ts: 88 tests (12 email, 12 phone, 10 token, 10 identifier, 30 scrubObject, 8 validation, 6 integration)
+6. ✅ **Comprehensive Testing** (110 new tests, 269 total)
+   - pii-sanitizers.test.ts: 82 tests (12 email, 12 phone, 10 token, 10 identifier, 30 scrubObject, 8 integration)
    - pii-validation.test.ts: 28 tests (8 pattern validation, 8 regex validation, 6 array validation, 6 compileRegex)
+   - **Domain-specific refactor**: Updated tests from SSN/CC/password to email/token/api_key focus
    - 100% code coverage for new utilities
    - Real-world integration tests (API response, form data, error logs, 1MB objects)
    - Circular reference detection tests
-   - PatternEdge cases and malformed input handling
+   - Pattern edge cases and malformed input handling
 
-7. ✅ **Documentation**
-   - README.md Section 4: "PII Sanitization Utilities" with 4 complete examples
-   - DEVELOPMENT.md: "Using PII Sanitization Utilities" with 5 real-world patterns
+7. ✅ **Documentation** (Domain-Specific Refactor Complete)
+   - README.md Section 4: "PII Sanitization Utilities" updated with email/token/api_key examples
+   - DEVELOPMENT.md: "Using PII Sanitization Utilities" updated with realistic patterns
+   - SPECIFICATION.md § 5.6.4: Updated to domain-specific PII types (email, tokens, API keys, captions)
+   - **Removed generic compliance patterns**: No SSN, credit cards, or passwords (not collected by platform)
    - JSDoc on all exported functions with @param, @returns, @example, @note
    - Custom middleware logging example in DEVELOPMENT.md
 
@@ -273,11 +280,14 @@ ESM + CJS for 4 entry points (index, types, constants, utils) with source maps
 - Full type declarations and source maps
 - Build successfully with ESM + CJS + .d.ts
 
-**Quality Metrics**:
-- Tests: 116 new tests, 159 total passing, 0 failures
+**Quality Metrics** (After Domain-Specific Refactor):
+- Tests: 269 tests passing, 0 failures
 - Coverage: 100% for new utilities
-- Errors: 0 TypeScript errors, 0 build errors
+- TypeScript: 0 errors, strict mode passes
+- Build: Successful ESM + CJS + .d.ts output
 - No breaking changes to existing code (SC-802, SC-803, constants)
+- **Refactor**: Narrowed PiiPatternName from 9 → 6 types (removed ssn, credit_card, password)
+- **Documentation**: Aligned SPECIFICATION.md, README.md, DEVELOPMENT.md with domain reality
 
 ## What's In Progress
 

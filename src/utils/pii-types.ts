@@ -5,27 +5,18 @@
 /**
  * Supported PII pattern types
  */
-export type PiiPatternName =
-  | 'email'
-  | 'phone'
-  | 'ssn'
-  | 'credit_card'
-  | 'token'
-  | 'api_key'
-  | 'password'
-  | 'jwt'
-  | 'custom'
+export type PiiPatternName = 'email' | 'phone' | 'token' | 'api_key' | 'jwt' | 'custom';
 
 /**
  * Represents a PII pattern for regex-based sanitization
  */
 export interface PiiPattern {
   /** Type of PII being matched (for logging and categorization) */
-  name: PiiPatternName
+  name: PiiPatternName;
   /** Regex string (not compiled) for pattern matching */
-  pattern: string
+  pattern: string;
   /** Replacement token to use when pattern is matched */
-  replacement: string
+  replacement: string;
 }
 
 /**
@@ -33,9 +24,9 @@ export interface PiiPattern {
  */
 export interface ScrubOptions {
   /** Maximum recursion depth to prevent stack overflow (default: 50) */
-  maxDepth?: number
+  maxDepth?: number;
   /** Internal: tracks visited objects to detect circular references */
-  visited?: WeakSet<any>
+  visited?: WeakSet<any>;
 }
 
 /**
@@ -43,7 +34,7 @@ export interface ScrubOptions {
  */
 export interface ValidationResult {
   /** Whether the validation passed */
-  isValid: boolean
+  isValid: boolean;
   /** Error message if validation failed */
-  error?: string
+  error?: string;
 }

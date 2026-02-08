@@ -306,14 +306,9 @@ const piiPatterns: PiiPattern[] = [
     replacement: '[REDACTED-EMAIL]',
   },
   {
-    name: 'phone',
-    pattern: '(?:\\+\\d{1,3})?[\\s.-]?\\d{2,4}[\\s.-]?\\d{2,4}',
-    replacement: '[REDACTED-PHONE]',
-  },
-  {
-    name: 'ssn',
-    pattern: '\\d{3}-\\d{2}-\\d{4}',
-    replacement: '[REDACTED-SSN]',
+    name: 'token',
+    pattern: 'Bearer\\s+[a-zA-Z0-9._-]+',
+    replacement: 'Bearer [REDACTED-TOKEN]',
   },
 ];
 
@@ -323,9 +318,8 @@ const errorResponse = {
   user: {
     id: 'user123',
     email: 'john@example.com',
-    phone: '555-123-4567',
-    ssn: '123-45-6789',
   },
+  authToken: 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
   timestamp: '2026-02-07T10:00:00Z',
 };
 
@@ -336,9 +330,8 @@ logger.error('API call failed', sanitized);
 //   user: {
 //     id: 'user123',
 //     email: '[REDACTED-EMAIL]',
-//     phone: '[REDACTED-PHONE]',
-//     ssn: '[REDACTED-SSN]',
 //   },
+//   authToken: 'Bearer [REDACTED-TOKEN]',
 //   timestamp: '2026-02-07T10:00:00Z',
 // }
 ```
