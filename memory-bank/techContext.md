@@ -48,6 +48,11 @@ _Last Updated: [PENDING START PHASE]_
 
 - **N/A** - This is a stateless library (no database)
 
+### Dependencies
+
+- **Prod**: `uuid` (v9/v10) - RFC4122 UUID generation
+- **Dev**: `@types/uuid`
+
 ### Infrastructure
 
 - **OneDev** - Self-hosted CI/CD and npm registry

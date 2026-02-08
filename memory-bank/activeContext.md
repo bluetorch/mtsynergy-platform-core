@@ -1,22 +1,74 @@
 # Active Context
 
-_Version: 16.0_
+_Version: 18.0_
 _Created: 2026-02-03_
-_Last Updated: 2026-02-07_
-_Current RIPER Mode: REVIEW_
+_Last Updated: 2026-02-08_
+_Current RIPER Mode: NONE_
 
 ## Current Focus
 
-**SC-804: ✅ COMPLETE - Ready for Next Story**
+**SC-805: ✅ COMPLETE - Correlation ID Generator & Validator**
 
-SC-804 (PII Sanitization Functions) has been successfully implemented, tested, reviewed, and documented. All quality gates passed.
+Correlation ID generation and validation module has been successfully implemented, tested, built, and formally reviewed.
 
-**Status**: Production Ready (Grade: A-)  
-**Next Story**: SC-805 - Observability Provider Abstraction
+**Status**: Production Ready - Grade A- (100% functional compliance, enhanced documentation & testing)
+**Review Status**: ✅ PASSED (3 minor positive deviations documented)
+**Next Story**: SC-806 - OpenTelemetry Trace Context Helpers
 
 ---
 
-## SC-804 Final Status Summary
+## SC-805 Implementation Summary
+
+### Implementation Status: ✅ COMPLETE
+
+**Files Created:**
+- `src/utils/observability/correlation-id.ts` - Core implementation
+- `src/utils/observability/index.ts` - Module barrel export
+- `src/__tests__/correlation-id.test.ts` - Comprehensive test suite
+
+**Dependencies Added:**
+- `uuid` (runtime)
+- `@types/uuid` (dev)
+
+**Updates Made:**
+- `src/utils/index.ts` - Added correlation-id exports
+- `techContext.md` - Documented uuid dependency
+
+### Test Results
+- ✅ **19/19 tests passing** (100% pass rate)
+- Test coverage includes:
+  - Generation: Valid UUID v4 format, uniqueness across 1000 IDs
+  - Validation: Type guards, version checking, variant validation
+  - Edge cases: Invalid strings, null-like values, whitespace
+  - Type safety: Branded type validation
+
+### Build Status
+- ✅ **ESM & CJS builds successful**
+- ✅ **Type declarations generated**
+- ✅ **No type errors**
+- Module sizes:
+  - `dist/utils/index.mjs`: 10.27 kB (3.17 kB gzip)
+  - `dist/utils/index.cjs`: 8.33 kB (2.94 kB gzip)
+
+### API Exported
+```typescript
+export type CorrelationId = string & { readonly __brand: 'CorrelationId' };
+export function generateCorrelationId(): CorrelationId;
+export function isValidCorrelationId(id: string): id is CorrelationId;
+```
+
+### Next Steps
+Ready to begin **SC-806: OpenTelemetry Trace Context Helpers**
+
+---
+
+## SC-805 Decisions & Outcomes
+
+1. ✅ Used `uuid` library (industry standard, robust)
+2. ✅ Created `src/utils/observability/` directory (scalable for future utilities)
+3. ✅ Implemented branded type for type safety
+4. ✅ Strict UUID v4 validation (rejects other versions)
+5. ✅ Case-insensitive validation (accepts uppercase, mixed case)
 
 ### Final Status
 
