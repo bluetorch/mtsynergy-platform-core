@@ -55,6 +55,23 @@ export const VIDEO_REQUIREMENTS: VideoRequirements = {
 
 /**
  * Get configuration for a specific platform
+ *
+ * Retrieves the complete configuration object for a given platform,
+ * including text, video, image requirements, and API rate limits.
+ *
+ * @param platform - The platform identifier
+ * @returns Complete platform configuration object
+ *
+ * @example
+ * ```typescript
+ * import { getPlatformConfig } from '@mtsynergy/platform-core/constants';
+ *
+ * const config = getPlatformConfig('twitter');
+ * console.log(config.text.maxCaptionLength); // 280
+ * console.log(config.video.maxDurationSeconds); // 140
+ * ```
+ *
+ * @public
  */
 export function getPlatformConfig(platform: Platform): PlatformConfig {
   return PLATFORM_CONFIGS[platform];
@@ -62,6 +79,26 @@ export function getPlatformConfig(platform: Platform): PlatformConfig {
 
 /**
  * Get configurations for multiple platforms
+ *
+ * Retrieves an array of platform configurations for the specified platforms.
+ * Useful for finding the most restrictive limits across multiple platforms.
+ *
+ * @param platforms - Array of platform identifiers
+ * @returns Array of platform configurations in the same order as input
+ *
+ * @example
+ * ```typescript
+ * import { getPlatformConfigs } from '@mtsynergy/platform-core/constants';
+ *
+ * const configs = getPlatformConfigs(['twitter', 'instagram', 'tiktok']);
+ * const minCaptionLimit = Math.min(...configs.map(c => c.text.maxCaptionLength));
+ * console.log(minCaptionLimit); // 280 (Twitter's limit)
+ *
+ * // Find most restrictive video duration
+ * const maxVideoDuration = Math.min(...configs.map(c => c.video.maxDurationSeconds));
+ * ```
+ *
+ * @public
  */
 export function getPlatformConfigs(platforms: Platform[]): PlatformConfig[] {
   return platforms.map((p) => PLATFORM_CONFIGS[p]);

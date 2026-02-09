@@ -1,15 +1,52 @@
 import type { PlatformConfig } from '../types';
 
+/**
+ * YouTube platform configuration
+ *
+ * Complete specifications for YouTube video upload requirements including description,
+ * video processing, and thumbnail constraints based on YouTube Creator Academy documentation.
+ *
+ * Note: YouTube has extremely high limits compared to other platforms (256GB, 12 hours).
+ *
+ * @see {@link https://creatoracademy.youtube.com/|YouTube Creator Academy}
+ * @see {@link ../../../docs/PLATFORM_LIMITS.md|Platform Limits Research}
+ *
+ * @example
+ * ```typescript
+ * import { YOUTUBE_CONFIG } from '@mtsynergy/platform-core/constants';
+ *
+ * const maxDescription = YOUTUBE_CONFIG.text.maxCaptionLength; // 5000
+ * const maxDuration = YOUTUBE_CONFIG.video.maxDurationSeconds; // 43200 (12 hours)
+ * ```
+ *
+ * @public
+ */
 export const YOUTUBE_CONFIG: PlatformConfig = {
+  /** Platform identifier */
   platform: 'youtube',
+
+  /** Display name for UI */
   displayName: 'YouTube',
+
+  /** YouTube brand color (hex) */
   brandColor: '#FF0000',
   text: {
-    maxCaptionLength: 5000, // Description
+    /** Maximum video description length in characters */
+    maxCaptionLength: 5000,
+
+    /** Maximum hashtags allowed in description (recommended: 2-3 for discoverability) */
     maxHashtags: 15,
+
+    /** Maximum @channel mentions allowed in description */
     maxMentions: 100,
+
+    /** Markdown formatting not supported (limited text formatting via timestamps) */
     supportsMarkdown: false,
+
+    /** Emoji support enabled */
     supportsEmojis: true,
+
+    /** URL links supported in description (auto-linked with timestamps) */
     supportsLinks: true,
   },
   video: {

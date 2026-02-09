@@ -15,7 +15,7 @@
 - **Language:** TypeScript 5.3+
 - **Build Tool:** Vite (ESM output for all environments)
 - **Distribution:** npm package (published to OneDev registry)
-- **Documentation:** Auto-generated from JSDoc comments
+- **Documentation:** TypeDoc-generated HTML docs from JSDoc comments
 - **Testing:** Vitest
 
 ## Project Structure

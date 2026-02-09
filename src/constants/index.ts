@@ -1,3 +1,18 @@
+/**
+ * Platform Constants Module
+ *
+ * Provides platform-specific configurations, role definitions, and timezone data
+ * for all supported social media platforms.
+ *
+ * Includes:
+ * - Platform configurations (text/video/image limits)
+ * - Workspace and social account roles
+ * - IANA timezone identifiers
+ * - Helper functions for retrieving platform configs
+ *
+ * @packageDocumentation
+ */
+
 // Types
 export type {
   Platform,

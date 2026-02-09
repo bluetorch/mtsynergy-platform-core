@@ -74,7 +74,21 @@ export const TIMEZONES: readonly Timezone[] = [
 ] as const;
 
 /**
- * Common timezone display names
+ * Human-readable display names for common timezones
+ *
+ * Maps IANA timezone identifiers to user-friendly display names
+ * suitable for dropdowns and UI selection. Includes major cities
+ * and regions across all continents.
+ *
+ * @example
+ * ```typescript
+ * import { TIMEZONE_DISPLAY_NAMES } from '@mtsynergy/platform-core/constants';
+ *
+ * const displayName = TIMEZONE_DISPLAY_NAMES['America/New_York'];
+ * console.log(displayName); // 'Eastern Time (US & Canada)'
+ * ```
+ *
+ * @public
  */
 export const TIMEZONE_DISPLAY_NAMES: Record<string, string> = {
   'America/New_York': 'Eastern Time (US & Canada)',
@@ -96,7 +110,26 @@ export const TIMEZONE_DISPLAY_NAMES: Record<string, string> = {
 };
 
 /**
- * Check if a string is a valid IANA timezone
+ * Type guard to check if a string is a valid IANA timezone identifier
+ *
+ * Validates against the comprehensive list of IANA timezone identifiers
+ * defined in TIMEZONES constant.
+ *
+ * @param tz - String to validate as timezone identifier
+ * @returns True if the string is a valid IANA timezone
+ *
+ * @example
+ * ```typescript
+ * import { isValidTimezone } from '@mtsynergy/platform-core/constants';
+ *
+ * if (isValidTimezone('America/New_York')) {
+ *   console.log('Valid timezone');
+ * }
+ *
+ * isValidTimezone('Invalid/Zone'); // false
+ * ```
+ *
+ * @public
  */
 export function isValidTimezone(tz: string): tz is Timezone {
   return TIMEZONES.includes(tz);

@@ -101,6 +101,88 @@ npm run test:coverage
 npm run validate-all  # Custom script (if available)
 ```
 
+### Writing JSDoc Documentation
+
+All public exports require comprehensive JSDoc documentation. Follow these guidelines:
+
+#### Quick Format  
+
+```typescript
+/**
+ * What this does (imperative mood: "Formats..." not "Format...")
+ *
+ * @param name - What this parameter does
+ * @returns What is returned
+ *
+ * @example
+ * ```typescript
+ * myFunction('example'); // 'output'
+ * ```
+ *
+ * @public
+ */
+export function myFunction(name: string): string {
+  return `output`;
+}
+```
+
+#### Required Elements
+
+- ✅ **Summary** - Single sentence, < 80 characters
+- ✅ **@param** - All parameters (even obvious ones)
+- ✅ **@returns** - Return value description
+- ✅ **@example** - At least 2 real examples with expected output
+
+#### Optional But Recommended
+
+- **Additional paragraphs** - Explain edge cases, performance notes, browser limitations
+- **@see** - Cross-reference related functions
+- **@throws** - Document errors that can be thrown
+- **@template** - Explain generic type parameters
+- **@deprecated** - Mark deprecated APIs with migration path
+
+#### Platform Config Documentation
+
+Platform configs need property-level JSDoc citing official sources:
+
+```typescript
+export const TWITTER_CONFIG: PlatformConfig = {
+  // ...
+  text: {
+    /** Maximum caption length (Twitter API v2 standard tier limit)
+     * @see https://developer.twitter.com/en/docs/twitter-api */
+    maxCaptionLength: 280,
+  },
+};
+```
+
+#### Verify Your Docs
+
+```bash
+# Generate docs locally
+npm run docs
+
+# View generated docs
+npm run docs:serve
+
+# Check for missing docs
+npm run build  # Will fail if public API lacks JSDoc
+```
+
+#### Common Mistakes
+
+❌ **Don't:**
+- Use first person: "I validate..." ⟶ ✅ "Validates..."
+- Skip examples for "obvious" functions
+- Document internal implementation details in public JSDoc
+- Copy-paste examples that don't actually work
+
+✅ **Do:**
+- Use imperative mood: "Validates email format"
+- Show real-world usage patterns
+- Test your examples (they should actually run)
+- Update docs when changing function signatures
+
 ## Architecture
 
 ### Type Hierarchy

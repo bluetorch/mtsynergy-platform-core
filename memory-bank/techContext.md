@@ -35,8 +35,11 @@ _Last Updated: [PENDING START PHASE]_
 
 ### Documentation
 
-- **JSDoc** - Inline code documentation format
-- **TypeDoc** - Documentation site generator (Apache 2.0 license)
+- **JSDoc** - Inline code documentation format (actively used throughout codebase)
+- **Markdown** - README files at project and module level
+- **OpenAPI Generator** - Auto-generates API documentation from BFF spec
+- **TypeDoc** - ⚠️ MENTIONED but NOT INSTALLED (package.json has no typedoc dependency)
+- **Note**: Despite README.md claiming "Auto-generated from JSDoc comments", no doc generation tooling is configured
 
 ### Version Control & Release
 

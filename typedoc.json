@@ -1,0 +1,22 @@
+{
+  "entryPoints": ["src/index.ts"],
+  "out": "docs/api",
+  "exclude": ["**/__tests__/**", "**/node_modules/**", "src/openapi/**"],
+  "excludePrivate": true,
+  "excludeProtected": true,
+  "excludeInternal": true,
+  "readme": "README.md",
+  "plugin": [],
+  "treatWarningsAsErrors": true,
+  "validation": {
+    "notExported": true,
+    "invalidLink": true,
+    "notDocumented": true
+  },
+  "sort": ["source-order"],
+  "kindSortOrder": ["Function", "Interface", "TypeAlias", "Variable", "Enum"],
+  "categorizeByGroup": true,
+  "groupOrder": ["Types", "Constants", "Utils", "*"],
+  "hideGenerator": false,
+  "includeVersion": true
+}
