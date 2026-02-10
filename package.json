@@ -83,6 +83,8 @@
   "license": "UNLICENSED",
   "devDependencies": {
     "@openapitools/openapi-generator-cli": "2.28.0",
+    "@opentelemetry/sdk-trace-base": "^1.9.0",
+    "@opentelemetry/sdk-trace-node": "^1.9.0",
     "@types/node": "^20.11.5",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -101,6 +103,7 @@
     "registry": "http://onedev.mtsynergy.internal/lib/npm/"
   },
   "dependencies": {
+    "@opentelemetry/api": "^1.9.0",
     "uuid": "^13.0.0"
   }
 }
