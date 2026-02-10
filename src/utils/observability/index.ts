@@ -29,3 +29,18 @@ export type { LogLevel, LogEntry, LoggerConfig, LogContext } from './logger-type
 
 // Logger singleton
 export { Logger } from './logger';
+
+// Breadcrumb types
+export type {
+  BreadcrumbType,
+  ClickBreadcrumb,
+  NavigationBreadcrumb,
+  FormSubmitBreadcrumb,
+  NetworkBreadcrumb,
+  BreadcrumbEvent,
+  BreadcrumbConfig,
+  IPersistenceProvider,
+} from './breadcrumb-types';
+
+// Breadcrumb manager
+export { BreadcrumbManager } from './breadcrumb-manager';

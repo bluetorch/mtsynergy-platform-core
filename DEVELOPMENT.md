@@ -508,6 +508,244 @@ export default async function handler(req, res) {
 }
 ```
 
+## Using Breadcrumb Manager for Error Debugging (SC-808)
+
+The Breadcrumb Manager captures user interactions leading up to errors, enabling post-mortem debugging without storing sensitive data.
+
+### Basic Usage
+
+```typescript
+import { BreadcrumbManager } from '@mtsynergy/platform-core/utils';
+
+// Add breadcrumbs for key user actions
+BreadcrumbManager.add({
+  type: 'click',
+  data: { selector: 'button.publish' },
+  timestamp: Date.now(),
+});
+
+BreadcrumbManager.add({
+  type: 'navigation',
+  data: { url: '/drafts/abc123/publish' },
+  timestamp: Date.now(),
+});
+
+BreadcrumbManager.add({
+  type: 'network',
+  data: { path: '/api/v1/drafts/abc123/publish', statusCode: 500 },
+  timestamp: Date.now(),
+});
+
+// When error occurs, attach breadcrumbs to error report
+try {
+  await publishDraft(draftId);
+} catch (error) {
+  const report = {
+    correlationId: generateCorrelationId(),
+    breadcrumbs: BreadcrumbManager.getAll(), // Last 20 interactions
+    error: {
+      message: error.message,
+      stack: error.stack,
+      code: error.code,
+    },
+  };
+  
+  await fetch('/api/observability/errors', {
+    method: 'POST',
+    body: JSON.stringify(report),
+  });
+}
+```
+
+### Event Types
+
+```typescript
+// Click events - capture user interactions
+BreadcrumbManager.add({
+  type: 'click',
+  data: { selector: '#publish-btn' }, // CSS selector
+  timestamp: Date.now(),
+});
+
+// Navigation events - track page changes
+BreadcrumbManager.add({
+  type: 'navigation',
+  data: { url: '/drafts' }, // URL pathname (no query params)
+  timestamp: Date.now(),
+});
+
+// Form submission - track form interactions
+BreadcrumbManager.add({
+  type: 'form_submit',
+  data: { formId: 'draft-editor' }, // Form ID only (no values)
+  timestamp: Date.now(),
+});
+
+// Network requests - track API calls
+BreadcrumbManager.add({
+  type: 'network',
+  data: {
+    path: '/api/v1/drafts', // Endpoint path
+    statusCode: 201, // HTTP status
+  },
+  timestamp: Date.now(),
+});
+```
+
+### Integration with Correlation IDs
+
+```typescript
+import { BreadcrumbManager, generateCorrelationId } from '@mtsynergy/platform-core/utils';
+
+// Start request with correlation ID
+const correlationId = generateCorrelationId();
+
+BreadcrumbManager.add({
+  type: 'navigation',
+  data: { url: '/drafts' },
+  timestamp: Date.now(),
+  correlationId, // Link breadcrumb to distributed trace
+});
+
+BreadcrumbManager.add({
+  type: 'network',
+  data: { path: '/api/v1/drafts', statusCode: 200 },
+  timestamp: Date.now(),
+  correlationId, // Same trace ID for all breadcrumbs in request
+});
+
+// Error report uses same correlation ID
+const errorReport = {
+  correlationId,
+  breadcrumbs: BreadcrumbManager.getAll(),
+  error: { /* ... */ },
+};
+```
+
+### PII Scrubbing (Automatic)
+
+All breadcrumbs are automatically scrubbed using SC-804 patterns:
+
+```typescript
+// Email in selector - automatically scrubbed
+BreadcrumbManager.add({
+  type: 'click',
+  data: { selector: 'button[data-user="john@example.com"]' },
+  timestamp: Date.now(),
+});
+
+// Retrieved breadcrumb has PII removed
+const breadcrumbs = BreadcrumbManager.getAll();
+// breadcrumbs[0].data.selector === 'button[data-user="[REDACTED-EMAIL]"]'
+
+// Phone in URL - automatically scrubbed
+BreadcrumbManager.add({
+  type: 'navigation',
+  data: { url: '/contact/+1-555-1234' },
+  timestamp: Date.now(),
+});
+// URL becomes: '/contact/[REDACTED-PHONE]'
+
+// Token in path - automatically scrubbed
+BreadcrumbManager.add({
+  type: 'network',
+  data: { path: '/api/auth?token=Bearer sk_live_abcdef...', statusCode: 200 },
+  timestamp: Date.now(),
+});
+// Path becomes: '/api/auth?token=Bearer [REDACTED-TOKEN]'
+```
+
+### Size Limits & FIFO Eviction
+
+```typescript
+// Max 20 breadcrumbs OR 5KB total size - whichever comes first
+// Oldest breadcrumbs automatically evicted
+
+// Example: Add 25 large breadcrumbs
+for (let i = 0; i < 25; i++) {
+  BreadcrumbManager.add({
+    type: 'click',
+    data: { selector: 'x'.repeat(500) }, // Large selector
+    timestamp: Date.now(),
+  });
+}
+
+// Only last 20 kept (FIFO eviction)
+const breadcrumbs = BreadcrumbManager.getAll();
+console.log(breadcrumbs.length); // 20
+
+// If adding large breadcrumb that exceeds 5KB with existing queue,
+// oldest items removed until it fits
+```
+
+### Testing & Isolation
+
+```typescript
+import { BreadcrumbManager } from '@mtsynergy/platform-core/utils';
+import { describe, it, beforeEach, expect } from 'vitest';
+
+describe('Error reporting', () => {
+  beforeEach(() => {
+    // Clear breadcrumbs before each test
+    BreadcrumbManager.reset();
+  });
+
+  it('should include breadcrumbs with error', () => {
+    BreadcrumbManager.add({
+      type: 'click',
+      data: { selector: 'button.save' },
+      timestamp: Date.now(),
+    });
+
+    BreadcrumbManager.add({
+      type: 'network',
+      data: { path: '/api/save', statusCode: 500 },
+      timestamp: Date.now(),
+    });
+
+    const breadcrumbs = BreadcrumbManager.getAll();
+    expect(breadcrumbs).toHaveLength(2);
+    expect(breadcrumbs[0].type).toBe('click');
+    expect(breadcrumbs[1].type).toBe('network');
+  });
+});
+```
+
+### Real-World Integration: React Error Boundary
+
+```typescript
+import { BreadcrumbManager } from '@mtsynergy/platform-core/utils';
+
+class ErrorBoundary extends React.Component {
+  componentDidCatch(error, errorInfo) {
+    const errorReport = {
+      correlationId: this.props.correlationId,
+      breadcrumbs: BreadcrumbManager.getAll(),
+      timestamp: new Date().toISOString(),
+      error: {
+        message: error.message,
+        stack: errorInfo.componentStack,
+      },
+      userAgent: navigator.userAgent,
+      url: window.location.href,
+    };
+
+    // Send to observability backend
+    fetch('/api/observability/errors', {
+      method: 'POST',
+      body: JSON.stringify(errorReport),
+    }).catch(err => console.error('Failed to report error:', err));
+
+    // Clear breadcrumbs after reporting
+    BreadcrumbManager.clear();
+  }
+
+  render() {
+    return this.props.children;
+  }
+}
+```
+
 ## Publishing to OneDev Registry
 
 ### Prerequisites

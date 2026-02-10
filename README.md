@@ -430,6 +430,88 @@ console.log(result); // "[HIDDEN]"
 - Token: `Bearer [REDACTED-TOKEN]`
 - Identifier: `[REDACTED-IDENTIFIER]`
 
+### 4.1 **Breadcrumb Manager (SC-808)**
+
+Captures user interaction events for error debugging without storing sensitive data.
+
+#### Features
+
+- **FIFO Queue:** Keeps last 20 breadcrumbs (max 5KB total size)
+- **Automatic PII Scrubbing:** All breadcrumbs automatically scrubbed using SC-804 patterns
+- **4 Event Types:** click, navigation, form_submit, network
+- **Platform Support:** Browser (sessionStorage), Node.js, React Native (AsyncStorage)
+- **Optional Correlation ID:** Link breadcrumbs to distributed trace contexts
+
+#### Usage
+
+```typescript
+import { BreadcrumbManager } from '@mtsynergy/platform-core/utils';
+
+// Add breadcrumbs throughout your application
+BreadcrumbManager.add({
+  type: 'click',
+  data: { selector: 'button.submit' },
+  timestamp: Date.now()
+});
+
+BreadcrumbManager.add({
+  type: 'navigation',
+  data: { url: '/drafts' },
+  timestamp: Date.now()
+});
+
+BreadcrumbManager.add({
+  type: 'form_submit',
+  data: { formId: 'publish-form' },
+  timestamp: Date.now()
+});
+
+BreadcrumbManager.add({
+  type: 'network',
+  data: { path: '/api/v1/drafts', statusCode: 201 },
+  timestamp: Date.now()
+});
+
+// Include in error reporting
+try {
+  await publishDraft(draftId);
+} catch (error) {
+  const errorReport = {
+    correlationId: getCorrelationId(),
+    breadcrumbs: BreadcrumbManager.getAll(),
+    error: {
+      message: error.message,
+      stack: error.stack,
+    },
+  };
+  
+  await fetch('/api/observability/errors', {
+    method: 'POST',
+    body: JSON.stringify(errorReport),
+  });
+}
+
+// Clear queue
+BreadcrumbManager.clear();
+```
+
+**Breadcrumb Event Types:**
+
+```typescript
+type BreadcrumbEvent = 
+  | { type: 'click'; data: { selector: string }; timestamp: number; correlationId?: string }
+  | { type: 'navigation'; data: { url: string }; timestamp: number; correlationId?: string }
+  | { type: 'form_submit'; data: { formId: string }; timestamp: number; correlationId?: string }
+  | { type: 'network'; data: { path: string; statusCode: number }; timestamp: number; correlationId?: string };
+```
+
+**Key Features:**
+- **Automatic Eviction:** Removes oldest breadcrumbs when 20-item or 5KB limits reached
+- **Automatic Scrubbing:** All PII (emails, phones, tokens) removed at add-time
+- **Session Persistence:** Breadcrumbs survive page navigation in browser
+- **Singleton Pattern:** Single queue shared across application
+- **Test Isolation:** Use `BreadcrumbManager.reset()` in test beforeEach blocks
+
 ### 5. **API Response Wrappers**
 
 ```typescript

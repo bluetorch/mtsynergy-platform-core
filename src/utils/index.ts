@@ -41,6 +41,14 @@ export type {
   LogEntry,
   LoggerConfig,
   LogContext,
+  BreadcrumbType,
+  ClickBreadcrumb,
+  NavigationBreadcrumb,
+  FormSubmitBreadcrumb,
+  NetworkBreadcrumb,
+  BreadcrumbEvent,
+  BreadcrumbConfig,
+  IPersistenceProvider,
 } from './observability';
 export {
   generateCorrelationId,
@@ -54,4 +62,5 @@ export {
   getActiveSpan,
   withSpan,
   Logger,
+  BreadcrumbManager,
 } from './observability';
