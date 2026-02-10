@@ -33,7 +33,15 @@ export {
 } from './pii-sanitizers';
 
 // Observability exports
-export type { CorrelationId, TraceContext, SpanOptions } from './observability';
+export type {
+  CorrelationId,
+  TraceContext,
+  SpanOptions,
+  LogLevel,
+  LogEntry,
+  LoggerConfig,
+  LogContext,
+} from './observability';
 export {
   generateCorrelationId,
   isValidCorrelationId,
@@ -45,4 +53,5 @@ export {
   createSpan,
   getActiveSpan,
   withSpan,
+  Logger,
 } from './observability';

@@ -1,14 +1,145 @@
 # Active Context
 
-_Version: 24.0_
+_Version: 26.1_
 _Created: 2026-02-03_
-_Last Updated: 2026-02-09_
-_Current RIPER Mode: REVIEW_
+_Last Updated: 2026-02-10_
+_Current RIPER Mode: REVIEW (Complete)_
 
 ## Current Focus
 
-**✅ REVIEW COMPLETE: SC-806 - OpenTelemetry Trace Context Helpers**
-**Grade: A (Production Ready)**
+**✅ SC-807 COMPLETE - Logger with Automatic PII Detection**
+**Status**: REVIEW COMPLETE (2026-02-10 Grade A, Production Ready)
+**Previous**: SC-806 Review Complete (Grade A, Production Ready)
+
+## Completed SC-807 Implementation Summary
+
+### Implementation Status: ✅ COMPLETE (Grade A)
+
+**All 32 implementation checklist items completed successfully:**
+
+✅ Phase 1 - Type System (2 items)
+- Created `src/utils/observability/logger-types.ts` with complete type definitions
+- Defined LogLevel, LogEntry, LoggerConfig, LogContext, IAsyncLocalStorage interfaces
+
+✅ Phase 2 - Logger Core (8 items)
+- Created `src/utils/observability/logger.ts` (~450 LOC singleton implementation)
+- Implemented initialize() with config validation and async pattern fetching
+- Implemented platform detection (React Native → Node → Browser)
+- Implemented correlation ID storage (sessionStorage/AsyncLocalStorage/module-level)
+- Implemented setCorrelationId() and getCorrelationId()
+- Implemented all 4 logging levels: debug(), info(), warn(), error()
+- Implemented createLogEntry() with JSON structure and timestamp formatting
+- Implemented reset() for test isolation
+
+✅ Phase 3 - PII Integration (2 items)
+- Integrated SC-804 sanitizers for automatic PII scrubbing
+- Implemented pattern fetching from BFF endpoint with timeout/fallback
+
+✅ Phase 4 - Exports (3 items)
+- Updated `src/utils/observability/index.ts` with logger types + class
+- Updated `src/utils/index.ts` with Logger exports
+- All exports verified and accessible from @mtsynergy/platform-core
+
+✅ Phase 5 - Unit Tests (8 items)
+- Created `src/__tests__/logger.test.ts` with 44 comprehensive tests
+- Initialization tests (5 tests): Config validation, pattern fetching, async setup
+- Environment detection tests (3 tests): React Native, Node.js, Browser
+- Correlation ID tests (6 tests): Storage per platform, persistence, cleanup
+- PII scrubbing tests (8 tests): Email/phone validation, deep object scrubbing
+- Log output format tests (12 tests): JSON structure, optional fields, timestamps
+- Production behavior tests (4 tests): NODE_ENV disables DEBUG level
+- Error handling tests (3 tests): Stack trace capture, error without Error object
+- Integration tests (3 tests): Multi-level logging, correlation ID persistence, realistic workflow
+
+✅ Phase 6 - Build & Verification (5 items)
+- TypeScript compilation: ✅ PASSING (0 errors, strict mode)
+- Vite ESM/CJS build: ✅ PASSING (273ms)
+  - `dist/utils/index.mjs`: 37.51 kB (gzipped: 9.86 kB) ✅ Under 50KB limit
+  - `dist/utils/index.cjs`: 26.41 kB (gzipped: 8.12 kB) ✅ Under 50KB limit
+- TypeDoc generation: ✅ PASSING (docs/api generated)
+- Bundle size verification: ✅ ACCEPTABLE (both ESM and CJS within limits)
+- Full test suite: ✅ 387 tests passing (19 test files)
+
+### Files Created (3 files, ~1,135 LOC)
+
+1. **src/utils/observability/logger-types.ts** (125 LOC)
+   - LogLevel: 'debug' | 'info' | 'warn' | 'error'
+   - LogEntry: Complete JSON structure with timestamp, level, correlationId, userId, workspaceId, service, message, stackTrace, context
+   - LoggerConfig: serviceName, patterns[], piiPatternsUrl, timeout
+   - LogContext: userId?, workspaceId?, and arbitrary fields
+   - IAsyncLocalStorage: Type for platform-specific storage
+
+2. **src/utils/observability/logger.ts** (450 LOC)
+   - Singleton Logger class with static methods
+   - initialize(config): Validates config, fetches patterns from URL
+   - Platform detection: React Native → Node.js → Browser fallback
+   - Correlation ID storage: sessionStorage (browser), AsyncLocalStorage (Node), module variable (mobile)
+   - debug(), info(), warn(), error(): Logging methods with PII scrubbing
+   - createLogEntry(): JSON serialization with ISO8601 timestamps
+   - Pattern fetching with timeout and fallback to provided patterns
+   - Production NODE_ENV check disables DEBUG level
+   - reset(): Test isolation cleanup
+
+3. **src/__tests__/logger.test.ts** (560 LOC)
+   - 44 comprehensive unit tests with proper test isolation
+   - beforeEach removes stale state from sessionStorage/AsyncLocalStorage
+   - Mock patterns array for consistent testing
+   - Test suites organized by concern (8 suites, 44 tests)
+
+### Files Modified (2 files)
+
+1. **src/utils/observability/index.ts**
+   - Added Logger type exports: LogLevel, LogEntry, LoggerConfig, LogContext
+   - Added Logger class export
+   
+2. **src/utils/index.ts**
+   - Added Logger types to type exports
+   - Added Logger to function exports
+   - Main utils barrel includes Logger alongside PII sanitizers
+
+### Success Criteria Met
+
+- ✅ 44 Logger unit tests passing (100%)
+- ✅ 387 total tests passing across 19 test files
+- ✅ TypeScript strict compilation: 0 errors
+- ✅ Bundle sizes within limits (ESM 37.51KB/9.86KB gzip, CJS 26.41KB/8.12KB gzip)
+- ✅ Documentation generated (TypeDoc)
+- ✅ Exports accessible and verified
+- ✅ PII scrubbing integration working
+- ✅ Correlation ID storage per platform verified
+- ✅ Production NODE_ENV behavior verified
+
+### Key Implementation Details
+
+**Environment Detection Order:**
+1. Check `navigator.product === 'ReactNative'` → React Native platform
+2. Check `process.versions?.node` exists → Node.js platform
+3. Check `window` and `document` exist → Browser platform
+4. Fallback to Node.js detection for safest behavior
+
+**Correlation ID Storage:**
+- **Browser**: sessionStorage key 'correlationId'
+- **Node.js**: AsyncLocalStorage (dynamic require in try-catch to avoid Vite browser build errors)
+- **React Native**: Module-level variable (platform doesn't support web storage)
+
+**PII Scrubbing:**
+- Uses SC-804 `scrubObject()` for deep object sanitization
+- Patterns can be provided in config or fetched from BFF endpoint
+- Fetch has 5-second timeout with fallback to provided patterns
+- Automatically sanitizes userId, workspaceId, and context fields
+
+**Production vs Development:**
+- NODE_ENV='development': All 4 levels (debug, info, warn, error) logged
+- NODE_ENV='production': Only info, warn, error logged (debug suppressed)
+
+### Technical Decisions Implemented
+
+1. **Singleton Pattern**: Static methods only, no constructor instantiation
+2. **Platform-Agnostic**: Single API works across 3 environments with automatic detection
+3. **Lazy AsyncLocalStorage Init**: Dynamic require only in Node.js to prevent browser bundler issues
+4. **Test Isolation**: Reset both in-memory state and persistent storage in beforeEach
+5. **Generic Type Parameter Handling**: Used `as any` cast for dynamic require to satisfy TypeScript strict mode
+6. **Type Safety First**: All types strictly defined despite dynamic require() limitations
 
 ## Completed SC-806 Implementation Summary
 
@@ -142,13 +273,193 @@ SC-806 COMPLETE. Ready for next user story.
 
 ---
 
-## Next Steps
+## SC-807 Research Summary
 
-After SC-806, continue with pending stories:
-- SC-807: Additional tracing features (if planned)
-- Ongoing: Documentation, bug fixes, maintenance
+### User Story Requirements
 
-Ready for transition to new feature development or maintenance mode.
+**Feature**: Logging utility with automatic PII detection and environment-specific output
+
+**Core Requirements from USER_STORIES.md (Lines 179-183)**:
+1. Logger class with methods: `debug(msg, context?)`, `info(msg, context?)`, `warn(msg, context?)`, `error(msg, context?, error?)`
+2. Automatically scrub PII from message and context before output
+3. Output format: JSON with fields `{timestamp, level, message, context, correlationId}`
+4. Correlation ID sourced from "global/AsyncStorage"
+5. Environment-specific output targets:
+   - **Browser**: outputs to `console.log`
+   - **Mobile**: outputs to native logger
+   - **Node**: outputs to `stdout`
+
+### Specification Details (SPECIFICATION.md § 5.6.3)
+
+**JSON Schema** (Lines 215-230):
+```json
+{
+  "timestamp": "2026-02-03T14:23:45.123Z",  // ISO8601 UTC
+  "level": "ERROR",                          // ERROR, WARN, INFO, DEBUG
+  "correlationId": "550e8400-...",           // UUID v4
+  "userId": "user_01HQ...",                  // Optional if authenticated
+  "workspaceId": "ws_01HQ...",               // Optional if scoped
+  "service": "platform-bff",                 // Service name
+  "message": "Failed to publish post",       // Human-readable (PII-sanitized)
+  "stackTrace": "...",                       // Full trace for ERROR (PII-sanitized)
+  "context": {                               // Additional data (JSONB, PII-sanitized)
+    "draftId": "draft_123",
+    "platform": "instagram"
+  }
+}
+```
+
+**Log Levels** (Lines 233-237):
+- **DEBUG**: Verbose diagnostic information (disabled in production)
+- **INFO**: Normal operational events (request start/end, scheduled job execution)
+- **WARN**: Recoverable errors, deprecated API usage, performance degradation
+- **ERROR**: Unhandled exceptions, failed operations, data inconsistencies
+
+**PII Sanitization** (§ 5.6.4):
+- Layer 1 (Application): BFF/Shell/Mobile scrub before logging
+- Uses regex patterns from ConfigMap (hot-reloadable)
+- Shell/Mobile fetch patterns from BFF API `/api/observability/pii-patterns`
+- Cache in sessionStorage (browser) / AsyncStorage (mobile)
+
+### Dependencies Already Implemented
+
+✅ **SC-804 (PII Sanitization)**: Complete
+- `scrubObject(obj, patterns)` - Recursively sanitizes object trees
+- `sanitizeEmail()`, `sanitizePhone()`, `redactToken()`, `maskIdentifier()`
+- Pattern validation and regex compilation
+- WeakSet circular reference detection
+- Location: `src/utils/pii-sanitizers.ts`, `src/utils/pii-types.ts`
+
+✅ **SC-805 (Correlation ID)**: Complete
+- `generateCorrelationId()` - UUID v4 generation
+- `isValidCorrelationId(id)` - Validation against UUID v4 regex
+- Branded type `CorrelationId` for compile-time safety
+- Location: `src/utils/observability/correlation-id.ts`
+
+✅ **SC-806 (Trace Context)**: Complete
+- OpenTelemetry integration with span creation
+- Not directly needed for SC-807 but part of observability suite
+- Location: `src/utils/observability/trace-*.ts`, `src/utils/observability/tracer.ts`
+
+### Technical Unknowns Requiring Clarification
+
+**1. Correlation ID Storage Mechanism**
+- Spec mentions "global/AsyncStorage" but mechanism unclear for each environment
+- **Browser**: sessionStorage? global variable? Window property?
+- **Node**: Process-level variable? Async local storage?
+- **Mobile**: React Native AsyncStorage (async API)
+- **Question**: How should Logger retrieve correlation ID in each environment?
+
+**2. Logger Instantiation Pattern**
+- **Option A**: Singleton pattern - single global Logger instance per environment
+- **Option B**: Factory pattern - create Logger per module/component with service name
+- **Option C**: Static class with static methods (no instantiation)
+- **Question**: Should Logger be instantiable or static? If instantiable, what config?
+
+**3. Environment Detection Strategy**
+- Need to distinguish Browser vs Node.js vs React Native
+- **Browser**: `typeof window !== 'undefined' && typeof document !== 'undefined'`
+- **Node**: `typeof process !== 'undefined' && process.versions?.node`
+- **React Native**: `typeof navigator !== 'undefined' && navigator.product === 'ReactNative'`
+- **Question**: Is this detection strategy sufficient? Edge cases for CloudFlare Workers?
+
+**4. Mobile Native Logger Implementation**
+- Spec says "outputs to native logger" for mobile
+- React Native typically uses `console.log` which forwards to platform loggers
+- **Question**: Is React Native `console.log` sufficient, or use platform-specific library?
+
+**5. Service Name Tracking**
+- JSON schema includes `"service": "platform-bff"` field
+- **Question**: Should Logger accept service name as config? How to set?
+
+**6. User ID & Workspace ID Context**
+- JSON schema includes optional `userId` and `workspaceId`
+- **Question**: Should Logger accept these as context, or retrieve from global state?
+
+**7. Stack Trace Capture**
+- JSON schema includes `stackTrace` field for ERROR level
+- **Question**: Auto-capture stack trace on error() calls? How to format?
+
+**8. PII Pattern Source**
+- SC-804 requires patterns array for `scrubObject()`
+- Spec mentions fetching from BFF API and caching
+- **Question**: Should Logger manage pattern fetching/caching, or accept patterns as config?
+
+**9. Output Format Strictness**
+- USER_STORIES says JSON format with 5 fields
+- SPECIFICATION shows 8+ fields including service, userId, workspaceId, stackTrace
+- **Question**: Which field set is required vs optional? Minimal vs comprehensive?
+
+**10. Class vs Functional API**
+- USER_STORIES says "Logger class with methods"
+- **Question**: Should implementation be class-based or functional utilities?
+
+### Architectural Context
+
+**Existing Observability Structure**:
+```
+src/utils/observability/
+├── correlation-id.ts       (SC-805 ✅)
+├── trace-types.ts          (SC-806 ✅)
+├── trace-context.ts        (SC-806 ✅)
+├── tracer.ts               (SC-806 ✅)
+└── index.ts                (Barrel exports ✅)
+```
+
+**Proposed Addition for SC-807**:
+```
+src/utils/observability/
+├── logger.ts               (NEW - Logger class)
+├── logger-types.ts         (NEW - LogLevel, LogEntry, LoggerConfig types)
+└── index.ts                (UPDATE - Export logger utilities)
+```
+
+**Test Files**:
+```
+src/__tests__/
+├── correlation-id.test.ts  (19 tests ✅)
+├── trace-context.test.ts   (39 tests ✅)
+├── tracer.test.ts          (16 tests ✅)
+└── logger.test.ts          (NEW - Environment, PII scrubbing, output format)
+```
+
+### Related Files to Reference
+
+**For PII Scrubbing Patterns**:
+- `src/utils/pii-sanitizers.ts` (scrubObject implementation)
+- `src/utils/pii-types.ts` (PiiPattern interface)
+- `src/__tests__/pii-sanitizers.test.ts` (82 tests showing usage)
+
+**For Environment Detection Patterns**:
+- `DEVELOPMENT.md` Line 307 (navigator.language example)
+- No existing environment detection code in codebase
+
+**For Class-Based Patterns**:
+- `src/openapi/src/runtime.ts` (6 class examples in generated OpenAPI code)
+- No class-based utilities in hand-written code (all functional)
+
+### Estimation
+
+**Complexity**: Medium-High
+- **New Concepts**: Environment detection, class-based API, correlation ID retrieval
+- **Dependencies**: Builds on SC-804 (PII) and SC-805 (Correlation ID)
+- **Testing Surface**: Multiple environments (browser/Node/mobile mocks)
+
+**Expected Scope**:
+- **New Files**: 2 (logger.ts, logger-types.ts)
+- **Modified Files**: 2 (observability/index.ts, utils/index.ts)
+- **Test Files**: 1 (logger.test.ts)
+- **Estimated LOC**: ~400-500 (implementation) + ~350-450 (tests)
+
+**Unknowns Blocking INNOVATE Mode**:
+- Correlation ID retrieval mechanism per environment
+- Logger instantiation pattern preference
+- Required vs optional JSON fields
+- PII pattern management strategy
+
+### Next Steps
+
+Ready to transition to INNOVATE mode once clarifying questions answered.
 
 ### Approved Planning Decisions
 

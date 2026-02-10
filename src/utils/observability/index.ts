@@ -23,3 +23,9 @@ export {
 
 // OpenTelemetry tracer integration
 export { initializeTracer, createSpan, getActiveSpan, withSpan } from './tracer';
+
+// Logger types
+export type { LogLevel, LogEntry, LoggerConfig, LogContext } from './logger-types';
+
+// Logger singleton
+export { Logger } from './logger';
